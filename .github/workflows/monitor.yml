@@ -1,0 +1,36 @@
+name: Monitor Domains
+
+on:
+  schedule:
+    - cron: "0 18 * * *"   # 01:00 sáng VN (18:00 hôm trước UTC)
+    - cron: "0 5 * * *"    # 12:00 trưa VN (05:00 UTC)
+  workflow_dispatch:       # cho phép chạy thủ công
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          pip install requests beautifulsoup4 python-whois
+
+      - name: Run monitor script
+        run: |
+          python monitor.py
+          mkdir -p docs
+          mv report.html docs/index.html
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs
