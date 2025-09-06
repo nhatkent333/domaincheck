@@ -12,7 +12,7 @@ jobs:
   monitor:
     runs-on: ubuntu-latest
     permissions:
-      contents: write   # cần để push lên gh-pages
+      contents: write   # cần quyền để push lên gh-pages
 
     steps:
       - name: Checkout repository
@@ -30,15 +30,25 @@ jobs:
 
       - name: Run monitor script
         run: |
-          python monitor.py
-          echo "📂 Sau khi chạy script:"
+          echo "▶️ Chạy monitor.py..."
+          python monitor.py || echo "❌ monitor.py lỗi"
+
+          echo "📂 Liệt kê file sau khi chạy:"
           ls -lh
-          test -f report.html && echo "✅ report.html OK" || echo "❌ report.html không tồn tại"
-          mkdir -p docs
-          cp report.html docs/index.html
-          echo "📂 Nội dung docs:"
+
+          if [ -f report.html ]; then
+            echo "✅ Tìm thấy report.html"
+            head -n 20 report.html
+            mkdir -p docs
+            cp report.html docs/index.html
+          else
+            echo "❌ Không tìm thấy report.html → deploy ra trang báo lỗi"
+            mkdir -p docs
+            echo "<h1>❌ Monitor script failed, không có report.html</h1>" > docs/index.html
+          fi
+
+          echo "📂 Nội dung docs/"
           ls -lh docs
-          head -n 20 docs/index.html || true
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
