@@ -29,29 +29,4 @@ jobs:
           pip install requests python-whois beautifulsoup4 lxml
 
       - name: Run monitor script
-        run: |
-          echo "▶️ Chạy monitor.py..."
-          python monitor.py || echo "❌ monitor.py lỗi"
-
-          echo "📂 Liệt kê file sau khi chạy:"
-          ls -lh
-
-          if [ -f report.html ]; then
-            echo "✅ Tìm thấy report.html"
-            head -n 20 report.html
-            mkdir -p docs
-            cp report.html docs/index.html
-          else
-            echo "❌ Không tìm thấy report.html → deploy ra trang báo lỗi"
-            mkdir -p docs
-            echo "<h1>❌ Monitor script failed, không có report.html</h1>" > docs/index.html
-          fi
-
-          echo "📂 Nội dung docs/"
-          ls -lh docs
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs
+        run: python monitor.py
