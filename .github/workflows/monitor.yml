@@ -1,33 +1,44 @@
-name: Monitor Domains
+name: Domain Monitor
 
 on:
   schedule:
-    - cron: "0 18 * * *"   # 01:00 sáng VN (18:00 hôm trước UTC)
-    - cron: "0 5 * * *"    # 12:00 trưa VN (05:00 UTC)
-  workflow_dispatch:       # cho phép chạy thủ công
+    # 1h sáng VN (UTC+7 = 18h hôm trước UTC)
+    - cron: "0 18 * * *"
+    # 12h trưa VN (UTC+7 = 5h UTC)
+    - cron: "0 5 * * *"
+  workflow_dispatch: # cho phép chạy thủ công
 
 jobs:
   monitor:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # cần để push lên gh-pages
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
-          pip install requests beautifulsoup4 python-whois
+          pip install --upgrade pip
+          pip install requests python-whois beautifulsoup4 lxml
 
       - name: Run monitor script
         run: |
           python monitor.py
+          echo "📂 Sau khi chạy script:"
+          ls -lh
+          test -f report.html && echo "✅ report.html OK" || echo "❌ report.html không tồn tại"
           mkdir -p docs
-          mv report.html docs/index.html
+          cp report.html docs/index.html
+          echo "📂 Nội dung docs:"
+          ls -lh docs
+          head -n 20 docs/index.html || true
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
